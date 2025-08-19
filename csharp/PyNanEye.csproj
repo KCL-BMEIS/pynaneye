@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <RuntimeIdentifiers>osx-arm64;win-x64</RuntimeIdentifiers>
+	<PlatformTarget>x64</PlatformTarget>
+	<OutputType>Library</OutputType>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+	<GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+	<UseWindowsForms>true</UseWindowsForms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="pythonnet" Version="3.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Awaiba">
+        <HintPath>lib/naneye/Awaiba.dll</HintPath>
+    </Reference>
+    <Reference Include="AWFrameProcessing">
+        <HintPath>lib/naneye/AWFrameProcessing.dll</HintPath>
+    </Reference>
+    <Reference Include="NanEyeUSB3provider">
+        <HintPath>lib/naneye/NanEyeUSB£provider.dll</HintPath>
+    </Reference>
+    <Reference Include="GeneralFpgaAlgorithms">
+        <HintPath>lib/naneye/GeneralFpgaAlgorithms.dll</HintPath>
+    </Reference>
+
+  </ItemGroup>
+
+</Project>
