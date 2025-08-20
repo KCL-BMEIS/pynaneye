@@ -1,6 +1,6 @@
 # pynaneye
 
-A Python interface for the NanEye camera.
+A Python interface for the AMS/Osram NanEye evaluation kit.
 
 ## Prerequisites
 
@@ -9,9 +9,8 @@ This package requires a compiled C# DLL to function. The C# source code is inclu
 To compile the C# code, you will need:
 
 *   A Windows operating system.
-*   The .NET Framework 4.8 SDK.
-*   Microsoft Visual Studio or the .NET CLI.
-*   The AMS/OSRAM NanEye SDK
+*   The .NET Framework 4.8 SDK https://dotnet.microsoft.com/en-us/download/dotnet-framework/net48
+*   The AMS/OSRAM NanEye SDK (see below)
 
 ### AMS/OSRAM NanEye SDK Installation
 
@@ -23,19 +22,15 @@ To compile the C# code, you will need:
 2.  **Run `install_naneye_dlls.py`:**
     *   Follow the instructions in the wizard that appears. You will be prompted to select the `lib/x64`, `lib/x86`, or `lib/win32` folder from your SDK installation, depending on your system's architecture.
 
-The script will then copy the required DLLs into the `csharp/lib/naneye` directory within this project, enabling the Python application to interface with the camera.
-
-### Compiling with Visual Studio
-
-1.  Open the `csharp/PyNanEye.sln` solution file in Visual Studio.
-2.  Build the solution in "Release" mode.
-3.  The compiled `PyNanEye.dll` will be located in the `csharp/bin/Release/net48` directory.
+The script will then copy the required DLLs and firmware files into the `csharp/lib/naneye` directory within this project, enabling the Python application to interface with the camera.
 
 ### Compiling with the .NET CLI
 
+Run `build_pynaneye.bat` (or `source build_pynaneye.bat` in Bash). Or:
+
 ```bash
 cd csharp
-dotnet build -c Release
+dotnet build csharp_naneye.sln -c Release
 ```
 
 The compiled `PyNanEye.dll` will be located in the `csharp/bin/Release/net48` directory.

@@ -1,4 +1,5 @@
 import tkinter as tk
+from pathlib import Path
 from tkinter import filedialog, messagebox
 import os
 import shutil
@@ -10,6 +11,7 @@ import sys
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 TARGET_DLL_SUBDIR = os.path.join("csharp", "lib", "naneye")
 TARGET_DLL_DIR = os.path.join(PROJECT_ROOT, TARGET_DLL_SUBDIR)
+TARGET_FIRMWARE_DIR = os.path.join(TARGET_DLL_DIR, "firmware")
 
 # --- User Instructions ---
 SDK_DOWNLOAD_LINK = "https://ams-osram.com/o/download-server/document-download/download/29941803"
@@ -47,6 +49,7 @@ def run_installer():
     source_dir = filedialog.askdirectory(
         title="Select the 'lib/x64', 'lib/x86', or 'lib/win32' folder from the NanEye C# SDK"
     )
+    firmware_source = Path(source_dir).parent.parent / 'firmware'
 
     if not source_dir:
         messagebox.showerror("Installation Cancelled", "No source directory selected. Exiting installer.")
@@ -57,13 +60,18 @@ def run_installer():
     # --- Create Target Directory ---
     try:
         os.makedirs(TARGET_DLL_DIR, exist_ok=True)
-        messagebox.showinfo("Target Directory", f"Ensured target directory exists:\n{TARGET_DLL_DIR}")
     except Exception as e:
         messagebox.showerror("Error", f"Could not create target directory:\n{TARGET_DLL_DIR}\n\nError: {e}")
         sys.exit(1)
 
+    try:
+        os.makedirs(TARGET_FIRMWARE_DIR, exist_ok=True)
+    except Exception as e:
+        messagebox.showerror("Error", f"Could not create target directory:\n{TARGET_FIRMWARE_DIR}\n\nError: {e}")
+        sys.exit(1)
+
     # --- Copy DLLs ---
-    messagebox.showinfo("Copying DLLs", "Step 3: Copying DLLs...\n\nThis might take a moment.")
+    messagebox.showinfo("Copying DLLs and firmware files", "Step 3: Copying files...\n\nThis might take a moment.")
     copied_files_count = 0
     errors_occurred = False
     copied_details = []
@@ -81,12 +89,24 @@ def run_installer():
                 errors_occurred = True
                 error_details.append(f"  Error copying {item_name}: {e}")
 
+    for item_name in os.listdir(firmware_source):
+        if item_name.lower().endswith(".bin") or item_name.lower().endswith(".img"):
+            source_path = os.path.join(firmware_source, item_name)
+            target_path = os.path.join(Path(TARGET_DLL_DIR) / 'firmware', item_name)
+            try:
+                shutil.copy2(source_path, target_path)  # copy2 preserves metadata
+                copied_files_count += 1
+                copied_details.append(f"  Copied: {item_name}")
+            except Exception as e:
+                errors_occurred = True
+                error_details.append(f"  Error copying {item_name}: {e}")
+
     if copied_files_count > 0 and not errors_occurred:
-        messagebox.showinfo("Installation Complete", f"Successfully copied {copied_files_count} DLLs to:\n{TARGET_DLL_DIR}\n\nInstallation finished!")
+        messagebox.showinfo("Installation Complete", f"Successfully copied {copied_files_count} files. Installation finished!")
     elif copied_files_count > 0 and errors_occurred:
-        messagebox.showwarning("Installation with Warnings", f"Copied {copied_files_count} DLLs, but some errors occurred.\n\n" + "\n".join(error_details))
+        messagebox.showwarning("Installation with Warnings", f"Copied {copied_files_count} files, but some errors occurred.\n\n" + "\n".join(error_details))
     else:
-        messagebox.showerror("Installation Failed", "No DLLs were found or copied. Please ensure you selected the correct source folder.")
+        messagebox.showerror("Installation Failed", "No files were found or copied. Please ensure you selected the correct source folder.")
         errors_occurred = True
 
     if errors_occurred:

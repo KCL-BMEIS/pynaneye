@@ -28,8 +28,8 @@ def _initialize_dotnet_runtime():
     import pythonnet
 
     DLL_NAME = "PyNanEye.dll"
-    DOTNET_LIB_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../csharp/lib/naneye"))
-    DOTNET_BUILD_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../csharp/bin/Release/net48"))
+    DOTNET_LIB_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../csharp/lib/naneye"))
+    DOTNET_BUILD_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../csharp/bin/Release/net48"))
 
     src_file = os.path.join(DOTNET_BUILD_DIR, DLL_NAME)
     dst_file = os.path.join(DOTNET_LIB_DIR, DLL_NAME)
@@ -46,11 +46,8 @@ def _initialize_dotnet_runtime():
     if DOTNET_LIB_DIR not in sys.path:
         sys.path.insert(0, DOTNET_LIB_DIR)
 
-    try:
-        pythonnet.set_runtime("coreclr")
-        pythonnet.load(runtime="coreclr", runtime_config=RUNTIME_CONFIG_PATH)
-    except RuntimeError:
-        pythonnet.load(runtime_config=RUNTIME_CONFIG_PATH)
+    pythonnet.set_runtime("netfx")
+    pythonnet.load()
 
     import clr
 

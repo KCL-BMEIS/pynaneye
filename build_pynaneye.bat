@@ -1,0 +1,1 @@
+dotnet build csharp/csharp_naneye.sln -c Release
