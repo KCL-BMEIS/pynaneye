@@ -80,6 +80,7 @@ class SensorChannel:
     A wrapper class for the .NET SensorChannel Enum.
     It ensures the .NET runtime is loaded before the camera is accessed.
     """
+
     def __getattribute__(self, name):
         _initialize_dotnet_runtime()
         # Get the attribute from the real .NET Enum class

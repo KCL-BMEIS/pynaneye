@@ -6,12 +6,10 @@ class NanEyeSensorType(Enum):
     NanEyeM = "NanEyeM"
     NanEyeXS = "NanEyeXS"
 
-
-class CameraChannel(Enum):
-    ch1 = "ch1"
-    ch2 = "ch2"
-    both = "both"
-
+class SensorChannel(Enum):
+    CH1 = "CH1"
+    CH2 = "CH2"
+    BOTH = "BOTH"
 
 class Camera:
     def __init__(self, sensorType: NanEyeSensorType) -> None: ...

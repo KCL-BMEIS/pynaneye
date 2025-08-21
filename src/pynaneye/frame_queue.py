@@ -3,6 +3,8 @@ import threading
 from typing import TypedDict, Tuple
 import queue
 
+from pynaneye.naneye import SensorChannel
+
 
 class NanEyeFrameDict(TypedDict):
     image_bytes: bytes
@@ -26,13 +28,14 @@ class FrameQueue:
     Defaults:
     - buffer_size: 1 for single channel (FIFO), 3 for 'BOTH' mode.
     """
-    def __init__(self, channel: 'SensorChannel', timestamp_tolerance_us: int = 20000, buffer_size: int | None = None):
+
+    def __init__(self, channel: SensorChannel, timestamp_tolerance_us: int = 20000, buffer_size: int | None = None):
         self.channel_str = str(channel)
 
         if buffer_size is None:
             # Need small buffer for matching stereo frames by timestamp
             # Or, if only using one channel, just keep latest frame
-            buffer_size = 3 if self.channel_str == 'BOTH' else 1
+            buffer_size = 3 if self.channel_str == "BOTH" else 1
 
         if buffer_size < 1:
             raise ValueError("buffer_size must be at least 1")
@@ -40,7 +43,7 @@ class FrameQueue:
         self._condition = threading.Condition()
         self._timestamp_tolerance_us = timestamp_tolerance_us
 
-        if self.channel_str == 'BOTH':
+        if self.channel_str == "BOTH":
             self._left_frames: deque[NanEyeFrameDict] = deque(maxlen=buffer_size)
             self._right_frames: deque[NanEyeFrameDict] = deque(maxlen=buffer_size)
         else:
@@ -49,7 +52,7 @@ class FrameQueue:
 
     def put(self, frame: NanEyeFrameDict) -> None:
         with self._condition:
-            if self.channel_str == 'BOTH':
+            if self.channel_str == "BOTH":
                 if frame["sensor_id"] == 0:
                     self._left_frames.append(frame)
                 elif frame["sensor_id"] == 1:
@@ -63,12 +66,12 @@ class FrameQueue:
 
     def get(self, timeout: float | None = None) -> NanEyeFrameDict | Tuple[NanEyeFrameDict, NanEyeFrameDict]:
         with self._condition:
-            if self.channel_str == 'BOTH':
+            if self.channel_str == "BOTH":
                 pair_found = self._condition.wait_for(self._has_pair, timeout=timeout)
                 if pair_found:
                     pair = self._find_and_remove_best_pair()
                     if pair[0] is not None and pair[1] is not None:
-                        return pair
+                        return pair[0], pair[1]
                 raise queue.Empty("No synchronized stereo pair available within the timeout.")
             else:
                 item_found = self._condition.wait_for(lambda: len(self._queue) > 0, timeout=timeout)
