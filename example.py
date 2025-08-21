@@ -12,7 +12,7 @@ ESCAPE_KEY = 27
 SENSOR_CHANNEL = SensorChannel.BOTH  # Or SensorChannel.CH1, SensorChannel.CH2
 
 
-def display_frames(input_queue: FrameQueue, window_name: str = "NanEye Viewer"):
+def display_frames(input_queue: FrameQueue, window_name: str = "NanEye Viewer. Press 'q' or 'esc' to quit."):
     """Displays frames from the queue in an openCV window."""
     cv2.namedWindow(window_name, cv2.WINDOW_AUTOSIZE)
     while True:
