@@ -50,6 +50,18 @@ or if you want to run the examples, automatically install OpenCV at the same tim
 
 See `example.py`.
 
+## Frame Handling with `FrameQueue`
+
+The `pynaneye.FrameQueue` class provides a mechanism for transferring frames from the camera to your Python application.  Old, unread frames are discarded to ensure the application always has access to the most recent data. When using a dual-sensor setup (`SensorChannel.BOTH`), the `FrameQueue` automatically synchronizes the streams by their timestamps. You can use a FrameQueue to access your frames by subscribing it to the ImageProcessed event:
+```python
+sensor_channel = SensorChannel.BOTH
+camera = Camera(NanEyeSensorType.NanEyeM, sensor_channel)
+print("Camera initialized.")
+
+frame_queue = FrameQueue(sensor_channel)
+camera.SubscribeToImageProcessedEvent(frame_queue.put)
+```
+
 ## How it works
 
 This package uses the `pythonnet` library to load and interact with the compiled C# DLL. The Python `Camera` class is a wrapper around the .NET `Camera` class, and it handles the initialization of the .NET runtime.
