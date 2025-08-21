@@ -3,13 +3,13 @@ import threading
 import cv2
 from numpy import concatenate
 
-from pynaneye import Camera, NanEyeSensorType, CameraChannel
+from pynaneye import Camera, NanEyeSensorType, SensorChannel
 from pynaneye.frame import NanEyeFrame
 from pynaneye.frame_queue import FrameQueue
 
 
 ESCAPE_KEY = 27
-CAMERA_CHANNEL = CameraChannel.both  # Or CameraChannel.ch1, CameraChannel.ch2
+SENSOR_CHANNEL = SensorChannel.BOTH  # Or SensorChannel.CH1, SensorChannel.CH2
 
 
 def display_frames(input_queue: FrameQueue, window_name: str = "NanEye Viewer"):
@@ -21,7 +21,7 @@ def display_frames(input_queue: FrameQueue, window_name: str = "NanEye Viewer"):
         except Exception:
             break
 
-        if CAMERA_CHANNEL == CameraChannel.both:
+        if SENSOR_CHANNEL == SensorChannel.BOTH:
             left_frame_dict, right_frame_dict = frame_data
             left_frame = NanEyeFrame(**left_frame_dict)
             right_frame = NanEyeFrame(**right_frame_dict)
@@ -44,10 +44,10 @@ def display_frames(input_queue: FrameQueue, window_name: str = "NanEye Viewer"):
 def run_example():
     try:
         print("Initializing Camera...")
-        camera = Camera(NanEyeSensorType.NanEyeM, CAMERA_CHANNEL)
+        camera = Camera(NanEyeSensorType.NanEyeM, SENSOR_CHANNEL)
         print("Camera initialized.")
 
-        frame_queue = FrameQueue(CAMERA_CHANNEL)
+        frame_queue = FrameQueue(SENSOR_CHANNEL)
         camera.SubscribeToImageProcessedEvent(frame_queue.put)
 
         display_thread = threading.Thread(target=display_frames, args=(frame_queue,))

@@ -1,4 +1,4 @@
-﻿using Awaiba.Drivers.Grabbers;
+using Awaiba.Drivers.Grabbers;
 using Awaiba.Drivers.Grabbers.Events;
 using Awaiba.Algorithms;
 using Awaiba.Data;
@@ -27,11 +27,11 @@ namespace PyNanEye
         NanEyeXS
     }
     
-    public enum CameraChannel
+    public enum SensorChannel
     {
-        ch1,
-        ch2,
-        both
+        CH1,
+        CH2,
+        BOTH
     }
 
     public class Camera
@@ -39,10 +39,10 @@ namespace PyNanEye
         private NanEyeMusb3_FobProvider provider = new NanEyeMusb3_FobProvider();
         private List<AutomaticExposureControlHardware> allAEC = new List<AutomaticExposureControlHardware>();
         private OnImageReceivedBitmapEventArgs lastFrame = null;
-        private CameraChannel channel;
+        private SensorChannel channel;
         private NanEyeSensorType sensorType;
 
-        public Camera(NanEyeSensorType sensorType = NanEyeSensorType.NanEye2D, CameraChannel channel = CameraChannel.both)
+        public Camera(NanEyeSensorType sensorType = NanEyeSensorType.NanEye2D, SensorChannel channel = SensorChannel.BOTH)
         {
             this.sensorType = sensorType;
             this.channel = channel;
@@ -59,8 +59,8 @@ namespace PyNanEye
 
             provider.Sensors = new List<bool>
             {
-                channel == CameraChannel.ch1 || channel == CameraChannel.both,
-                channel == CameraChannel.ch2 || channel == CameraChannel.both
+                channel == SensorChannel.CH1 || channel == SensorChannel.BOTH,
+                channel == SensorChannel.CH2 || channel == SensorChannel.BOTH
             };
 
             foreach (var pr in ProcessingWrapper.pr)
@@ -135,7 +135,7 @@ namespace PyNanEye
 
         private void WriteRegister(int address, int value, bool isSensorRegister = true)
         {
-            if (channel == CameraChannel.ch1 || channel == CameraChannel.both)
+            if (channel == SensorChannel.CH1 || channel == SensorChannel.BOTH)
             {
                 provider.WriteRegister(new RegisterPayload
                 {
@@ -145,7 +145,7 @@ namespace PyNanEye
                     IsSensorRegister = isSensorRegister
                 });
             }
-            if (channel == CameraChannel.ch2 || channel == CameraChannel.both)
+            if (channel == SensorChannel.CH2 || channel == SensorChannel.BOTH)
             {
                 provider.WriteRegister(new RegisterPayload
                 {
@@ -273,11 +273,11 @@ namespace PyNanEye
                 SetAECDefaultSettings(aec);
             };
 
-            if (channel == CameraChannel.ch1 || channel == CameraChannel.both)
+            if (channel == SensorChannel.CH1 || channel == SensorChannel.BOTH)
             {
                 configureAEC(0);
             }
-            if (channel == CameraChannel.ch2 || channel == CameraChannel.both)
+            if (channel == SensorChannel.CH2 || channel == SensorChannel.BOTH)
             {
                 configureAEC(1);
             }
@@ -290,11 +290,11 @@ namespace PyNanEye
         public void EnableColourReconstruction()
         {
             Console.WriteLine($"Color reconstruction enabled");
-            if (channel == CameraChannel.ch1 || channel == CameraChannel.both)
+            if (channel == SensorChannel.CH1 || channel == SensorChannel.BOTH)
             {
                 ProcessingWrapper.pr[0].colorReconstruction.Apply = true;
             }
-            if (channel == CameraChannel.ch2 || channel == CameraChannel.both)
+            if (channel == SensorChannel.CH2 || channel == SensorChannel.BOTH)
             {
                 ProcessingWrapper.pr[1].colorReconstruction.Apply = true;
             }
@@ -303,11 +303,11 @@ namespace PyNanEye
         public void DisableColourReconstruction()
         {
             Console.WriteLine($"Color reconstruction disabled");
-            if (channel == CameraChannel.ch1 || channel == CameraChannel.both)
+            if (channel == SensorChannel.CH1 || channel == SensorChannel.BOTH)
             {
                 ProcessingWrapper.pr[0].colorReconstruction.Apply = false;
             }
-            if (channel == CameraChannel.ch2 || channel == CameraChannel.both)
+            if (channel == SensorChannel.CH2 || channel == SensorChannel.BOTH)
             {
                 ProcessingWrapper.pr[1].colorReconstruction.Apply = false;
             }

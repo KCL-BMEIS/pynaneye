@@ -3,12 +3,12 @@ import os
 import shutil
 import platform
 from enum import Enum
-from typing import Callable, Optional
+from typing import Callable
 
 # --- Globals to hold the real .NET types once loaded ---
-_Camera: Optional[Callable] = None
-_NanEyeSensorType: Optional[Enum] = None
-_CameraChannel: Optional[Enum] = None
+_Camera: Callable | None = None
+_NanEyeSensorType: Enum | None = None
+_SensorChannel: Enum | None = None
 _dotnet_initialized = False
 
 
@@ -17,7 +17,7 @@ def _initialize_dotnet_runtime():
     Loads the .NET runtime and imports the C# classes.
     This is called lazily when the hardware classes are first used.
     """
-    global _Camera, _CameraChannel, _NanEyeSensorType, _dotnet_initialized
+    global _Camera, _SensorChannel, _NanEyeSensorType, _dotnet_initialized
     if _dotnet_initialized:
         return
 
@@ -55,11 +55,11 @@ def _initialize_dotnet_runtime():
     # Import the C# classes and assign them to the global variables
     from PyNanEye import Camera as DotNetCamera
     from PyNanEye import NanEyeSensorType as DotNetSensorType
-    from PyNanEye import CameraChannel as DotNetCameraChannel
+    from PyNanEye import SensorChannel as DotNetSensorChannel
 
     _Camera = DotNetCamera
     _NanEyeSensorType = DotNetSensorType
-    _CameraChannel = DotNetCameraChannel
+    _SensorChannel = DotNetSensorChannel
     _dotnet_initialized = True
 
 
@@ -75,19 +75,19 @@ class Camera:
         return _Camera(*args, **kwargs)
 
 
-class CameraChannel:
+class SensorChannel:
     """
-    A wrapper class for the .NET CameraChannel Enum.
+    A wrapper class for the .NET SensorChannel Enum.
     It ensures the .NET runtime is loaded before the camera is accessed.
     """
     def __getattribute__(self, name):
         _initialize_dotnet_runtime()
         # Get the attribute from the real .NET Enum class
-        return getattr(_CameraChannel, name)
+        return getattr(_SensorChannel, name)
 
 
 # Instantiate the wrapper to make it behave like an enum object
-CameraChannel = CameraChannel()  # type: ignore
+SensorChannel = SensorChannel()  # type: ignore
 
 
 class NanEyeSensorType:

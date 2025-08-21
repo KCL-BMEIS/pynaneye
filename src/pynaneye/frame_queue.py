@@ -1,6 +1,6 @@
 from collections import deque
 import threading
-from typing import TypedDict, Optional, Tuple, Union
+from typing import TypedDict, Tuple
 import queue
 
 
@@ -16,23 +16,23 @@ class FrameQueue:
     """A thread-safe queue for handling frames from a NanEye camera.
 
     This queue manages frames from either a single channel or two synchronized
-    stereo channels ('both' mode). It is designed for real-time applications,
+    stereo channels ('BOTH' mode). It is designed for real-time applications,
     preventing memory buildup by using a fixed-size buffer and discarding the
     oldest frames when the buffer is full.
 
-    In 'both' mode, it synchronizes frames from the left and right sensors
+    In 'BOTH' mode, it synchronizes frames from the left and right sensors
     by finding the pair with the closest timestamps.
 
     Defaults:
-    - buffer_size: 1 for single channel (FIFO), 3 for 'both' mode.
+    - buffer_size: 1 for single channel (FIFO), 3 for 'BOTH' mode.
     """
-    def __init__(self, channel: 'CameraChannel', timestamp_tolerance_us: int = 20000, buffer_size: Optional[int] = None):
+    def __init__(self, channel: 'SensorChannel', timestamp_tolerance_us: int = 20000, buffer_size: int | None = None):
         self.channel_str = str(channel)
 
         if buffer_size is None:
             # Need small buffer for matching stereo frames by timestamp
             # Or, if only using one channel, just keep latest frame
-            buffer_size = 3 if self.channel_str == 'both' else 1
+            buffer_size = 3 if self.channel_str == 'BOTH' else 1
 
         if buffer_size < 1:
             raise ValueError("buffer_size must be at least 1")
@@ -40,7 +40,7 @@ class FrameQueue:
         self._condition = threading.Condition()
         self._timestamp_tolerance_us = timestamp_tolerance_us
 
-        if self.channel_str == 'both':
+        if self.channel_str == 'BOTH':
             self._left_frames: deque[NanEyeFrameDict] = deque(maxlen=buffer_size)
             self._right_frames: deque[NanEyeFrameDict] = deque(maxlen=buffer_size)
         else:
@@ -49,7 +49,7 @@ class FrameQueue:
 
     def put(self, frame: NanEyeFrameDict) -> None:
         with self._condition:
-            if self.channel_str == 'both':
+            if self.channel_str == 'BOTH':
                 if frame["sensor_id"] == 0:
                     self._left_frames.append(frame)
                 elif frame["sensor_id"] == 1:
@@ -61,9 +61,9 @@ class FrameQueue:
                 self._queue.append(frame)
             self._condition.notify()
 
-    def get(self, timeout: Optional[float] = None) -> Union[NanEyeFrameDict, Tuple[NanEyeFrameDict, NanEyeFrameDict]]:
+    def get(self, timeout: float | None = None) -> NanEyeFrameDict | Tuple[NanEyeFrameDict, NanEyeFrameDict]:
         with self._condition:
-            if self.channel_str == 'both':
+            if self.channel_str == 'BOTH':
                 pair_found = self._condition.wait_for(self._has_pair, timeout=timeout)
                 if pair_found:
                     pair = self._find_and_remove_best_pair()
@@ -86,10 +86,10 @@ class FrameQueue:
                     return True
         return False
 
-    def _find_and_remove_best_pair(self) -> Tuple[Optional[NanEyeFrameDict], Optional[NanEyeFrameDict]]:
+    def _find_and_remove_best_pair(self) -> Tuple[NanEyeFrameDict | None, NanEyeFrameDict | None]:
         # This method is called within the condition lock
-        best_left_frame: Optional[NanEyeFrameDict] = None
-        best_right_frame: Optional[NanEyeFrameDict] = None
+        best_left_frame: NanEyeFrameDict | None = None
+        best_right_frame: NanEyeFrameDict | None = None
         min_time_diff = float("inf")
 
         # Create copies to iterate over while potentially modifying the deques
