@@ -1,5 +1,4 @@
 import threading
-from typing import Tuple
 
 import cv2
 from numpy import concatenate

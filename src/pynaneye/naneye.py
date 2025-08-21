@@ -8,6 +8,7 @@ from typing import Callable, Optional
 # --- Globals to hold the real .NET types once loaded ---
 _Camera: Optional[Callable] = None
 _NanEyeSensorType: Optional[Enum] = None
+_CameraChannel: Optional[Enum] = None
 _dotnet_initialized = False
 
 
@@ -16,7 +17,7 @@ def _initialize_dotnet_runtime():
     Loads the .NET runtime and imports the C# classes.
     This is called lazily when the hardware classes are first used.
     """
-    global _Camera, _NanEyeSensorType, _dotnet_initialized
+    global _Camera, _CameraChannel, _NanEyeSensorType, _dotnet_initialized
     if _dotnet_initialized:
         return
 
@@ -41,8 +42,6 @@ def _initialize_dotnet_runtime():
             f"Could not update DLL from the Visual Studio build directory. Using version already in the lib directory."
         )
 
-    RUNTIME_CONFIG_PATH = os.path.join(DOTNET_LIB_DIR, "PyNanEye.runtimeconfig.json")
-
     if DOTNET_LIB_DIR not in sys.path:
         sys.path.insert(0, DOTNET_LIB_DIR)
 
@@ -54,10 +53,13 @@ def _initialize_dotnet_runtime():
     clr.AddReference(DLL_NAME.split(".")[0])
 
     # Import the C# classes and assign them to the global variables
-    from PyNanEye import Camera as DotNetCamera, NanEyeSensorType as DotNetSensorType
+    from PyNanEye import Camera as DotNetCamera
+    from PyNanEye import NanEyeSensorType as DotNetSensorType
+    from PyNanEye import CameraChannel as DotNetCameraChannel
 
     _Camera = DotNetCamera
     _NanEyeSensorType = DotNetSensorType
+    _CameraChannel = DotNetCameraChannel
     _dotnet_initialized = True
 
 
@@ -71,6 +73,21 @@ class Camera:
         _initialize_dotnet_runtime()
         # Create an instance of the real .NET camera class
         return _Camera(*args, **kwargs)
+
+
+class CameraChannel:
+    """
+    A wrapper class for the .NET CameraChannel Enum.
+    It ensures the .NET runtime is loaded before the camera is accessed.
+    """
+    def __getattribute__(self, name):
+        _initialize_dotnet_runtime()
+        # Get the attribute from the real .NET Enum class
+        return getattr(_CameraChannel, name)
+
+
+# Instantiate the wrapper to make it behave like an enum object
+CameraChannel = CameraChannel()  # type: ignore
 
 
 class NanEyeSensorType:
