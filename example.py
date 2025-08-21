@@ -14,7 +14,7 @@ SENSOR_CHANNEL = SensorChannel.BOTH  # Or SensorChannel.CH1, SensorChannel.CH2
 
 def display_frames(input_queue: FrameQueue, window_name: str = "NanEye Viewer"):
     """Displays frames from the queue in an openCV window."""
-    cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
+    cv2.namedWindow(window_name, cv2.WINDOW_AUTOSIZE)
     while True:
         try:
             frame_data = input_queue.get(timeout=1)

@@ -48,16 +48,35 @@ or if you want to run the examples, automatically install OpenCV at the same tim
 
 ## Usage
 
-See `example.py`.
+See `example.py` for a working example using OpenCV for display. Here's a minimal example:
 
-## Frame Handling with `FrameQueue`
+```python
+import time
+from pynaneye import Camera, NanEyeSensorType, SensorChannel
+from pynaneye.frame import NanEyeFrame
+
+def handle_new_frame(frame_data: dict) -> None:
+    """ Implement your own frame handling function, or use FrameQueue (see below)"""
+    frame = NanEyeFrame(**frame_data)  # you can convert a frame data dict to a NanEyeFrame dataclass
+    frame_pixels_array = frame.as_array()  # NanEyeFrame can then provide pixels as a numpy array
+
+sensor_channel = SensorChannel.CH1
+camera = Camera(NanEyeSensorType.NanEyeM, sensor_channel)
+camera.SubscribeToImageProcessedEvent(handle_new_frame)  # handle_new_frame will be called every time a new frame arrives
+
+camera.StartCapture()
+
+time.sleep(5)
+
+camera.StopCapture()
+```
+
+### Frame Handling with `FrameQueue`
 
 The `pynaneye.FrameQueue` class provides a mechanism for transferring frames from the camera to your Python application.  Old, unread frames are discarded to ensure the application always has access to the most recent data. When using a dual-sensor setup (`SensorChannel.BOTH`), the `FrameQueue` automatically synchronizes the streams by their timestamps. You can use a FrameQueue to access your frames by subscribing it to the ImageProcessed event:
 ```python
 sensor_channel = SensorChannel.BOTH
 camera = Camera(NanEyeSensorType.NanEyeM, sensor_channel)
-print("Camera initialized.")
-
 frame_queue = FrameQueue(sensor_channel)
 camera.SubscribeToImageProcessedEvent(frame_queue.put)
 ```
